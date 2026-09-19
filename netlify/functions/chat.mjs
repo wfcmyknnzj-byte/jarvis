@@ -56,12 +56,15 @@ export default async (req) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-5.6-luna",
-        instructions:
-          "Sen kullanıcının kişisel yapay zekâ asistanı JARVIS'sin. Türkçe konuş. Samimi, kısa ve doğal cevaplar ver. Kullanıcı özellikle istemedikçe gereksiz uzun cevaplar verme. Henüz bilgisayara veya telefona doğrudan erişimin olmadığını unutma; varmış gibi davranma.",
-        input: messages
-      })
-    }
+      model: "gpt-5.6-luna",
+instructions:
+  "Sen kullanıcının kişisel yapay zekâ asistanı JARVIS'sin...",
+tools: [
+  {
+    type: "web_search"
+  }
+],
+input: messages
   );
 
   const data = await response.json();
