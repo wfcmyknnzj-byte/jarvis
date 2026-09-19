@@ -6,7 +6,10 @@ export default async (req) => {
   };
 
   if (req.method === "OPTIONS") {
-    return new Response("", { status: 204, headers: cors });
+    return new Response("", {
+      status: 204,
+      headers: cors
+    });
   }
 
   if (req.method !== "POST") {
@@ -17,10 +20,12 @@ export default async (req) => {
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SECRET_KEY;
 
   if (!apiKey) {
     return Response.json(
-      { error: "OPENAI_API_KEY Netlify Function'a ulaşamıyor." },
+      { error: "OPENAI_API_KEY bulunamadı." },
       { status: 500, headers: cors }
     );
   }
@@ -47,6 +52,114 @@ export default async (req) => {
     );
   }
 
+  // --------------------------------
+  // JARVIS HAFIZA SİSTEMİ
+  // --------------------------------
+
+  let memories = [];
+
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const memoryResponse = await fetch(
+        `${supabaseUrl}/rest/v1/memories?select=memory,created_at&user_id=eq.default&order=created_at.desc&limit=50`,
+        {
+          method: "GET",
+          headers: {
+            "apikey": supabaseKey,
+            "Authorization": `Bearer ${supabaseKey}`
+          }
+        }
+      );
+
+      if (memoryResponse.ok) {
+        memories = await memoryResponse.json();
+      }
+    } catch {
+      // Hafıza sistemi çalışmazsa JARVIS normal şekilde devam eder.
+      memories = [];
+    }
+  }
+
+  // Son kullanıcı mesajını bul
+  const lastUserMessage = [...messages]
+    .reverse()
+    .find((m) => m.role === "user");
+
+  const userText =
+    typeof lastUserMessage?.content === "string"
+      ? lastUserMessage.content.trim()
+      : "";
+
+  // "hatırla:" komutu
+  const rememberMatch = userText.match(
+    /^(?:hatırla|unutma|bunu hatırla)\s*[:,-]?\s*(.+)$/i
+  );
+
+  if (rememberMatch && supabaseUrl && supabaseKey) {
+    const memoryText = rememberMatch[1].trim();
+
+    if (memoryText) {
+      try {
+        const saveResponse = await fetch(
+          `${supabaseUrl}/rest/v1/memories`,
+          {
+            method: "POST",
+            headers: {
+              "apikey": supabaseKey,
+              "Authorization": `Bearer ${supabaseKey}`,
+              "Content-Type": "application/json",
+              "Prefer": "return=minimal"
+            },
+            body: JSON.stringify({
+              user_id: "default",
+              memory: memoryText
+            })
+          }
+        );
+
+        if (saveResponse.ok) {
+          return Response.json(
+            {
+              answer: `Tamam. Bunu hafızama kaydettim: ${memoryText}`
+            },
+            { headers: cors }
+          );
+        }
+      } catch {
+        // Hafıza kaydedilemezse normal AI yanıtına devam edilir.
+      }
+    }
+  }
+
+  // Hafızaları JARVIS'e aktar
+  let memoryText = "";
+
+  if (memories.length) {
+    memoryText = memories
+      .map((item) => `- ${item.memory}`)
+      .join("\n");
+  }
+
+  // --------------------------------
+  // OPENAI
+  // --------------------------------
+
+  const instructions = `
+Sen kullanıcının kişisel yapay zekâ asistanı JARVIS'sin.
+
+Türkçe konuş.
+Kısa, doğal ve yardımcı cevaplar ver.
+Kullanıcı sana soru sorduğunda mümkün olduğunca doğru bilgi ver.
+Gerektiğinde internet üzerinden güncel bilgi araştır.
+
+Kullanıcının kalıcı hafızası aşağıdadır:
+
+${memoryText || "Henüz kayıtlı bir hafıza yok."}
+
+Bu hafızayı konuşma sırasında gerektiğinde kullan.
+Hafızada olmayan bilgileri varmış gibi uydurma.
+`;
+
   const response = await fetch(
     "https://api.openai.com/v1/responses",
     {
@@ -56,26 +169,34 @@ export default async (req) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-      model: "gpt-5.6-luna",
-instructions:
-  "Sen kullanıcının kişisel yapay zekâ asistanı JARVIS'sin...",
-tools: [
-  {
-    type: "web_search"
-  }
-],
-input: messages
+        model: "gpt-5.6-luna",
+
+        instructions,
+
+        tools: [
+          {
+            type: "web_search"
+          }
+        ],
+
+        input: messages
       })
     }
-);
-
+  );
 
   const data = await response.json();
 
   if (!response.ok) {
     return Response.json(
-      { error: data?.error?.message || "OpenAI API hatası." },
-      { status: response.status, headers: cors }
+      {
+        error:
+          data?.error?.message ||
+          "OpenAI API hatası."
+      },
+      {
+        status: response.status,
+        headers: cors
+      }
     );
   }
 
@@ -98,7 +219,11 @@ input: messages
   }
 
   return Response.json(
-    { answer: answer || "Cevap boş döndü." },
-    { headers: cors }
+    {
+      answer: answer || "Cevap boş döndü."
+    },
+    {
+      headers: cors
+    }
   );
 };
