@@ -65,7 +65,10 @@ tools: [
   }
 ],
 input: messages
-  );
+      })
+    }
+);
+
 
   const data = await response.json();
 
