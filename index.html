@@ -7,94 +7,149 @@
 <title>J.A.R.V.I.S.</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#05070c;color:#e8f6ff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
-.app{max-width:520px;min-height:100vh;margin:auto;padding:28px 16px 22px;display:flex;flex-direction:column}
-.header{text-align:center;letter-spacing:4px;font-weight:700;font-size:22px}
-.sub{text-align:center;color:#6e8796;font-size:10px;letter-spacing:3px;margin-top:5px}
-.core{width:190px;height:190px;margin:45px auto 22px;border-radius:50%;display:grid;place-items:center;position:relative;background:radial-gradient(circle,#18384a 0,#0b1720 42%,#05070c 70%);box-shadow:0 0 25px #16769a66,inset 0 0 35px #0c7da533}
-.core:before,.core:after{content:"";position:absolute;border-radius:50%;border:1px solid #4fc3f755}
-.core:before{inset:12px}
-.core:after{inset:28px;border-style:dashed;animation:spin 12s linear infinite}
-.eye{width:34px;height:34px;border-radius:50%;background:#bcefff;box-shadow:0 0 20px #5ddcff,0 0 45px #199bc8;animation:pulse 2s infinite}
-.listening .eye{box-shadow:0 0 35px #8eeeff,0 0 75px #2ed7ff;transform:scale(1.25)}
+:root{--bg:#05070c;--panel:#0a0f16;--line:#162b36;--text:#e8f6ff;--muted:#6e8796;--glow:#8eeeff}
+body{margin:0;background:radial-gradient(circle at 50% 18%,#0b1b26 0,#05070c 34%,#05070c 100%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+.app{width:min(720px,100%);min-height:100vh;margin:auto;padding:22px 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
+header{text-align:center;letter-spacing:5px}
+h1{margin:4px 0 4px;font-size:24px}
+.sub{text-align:center;color:#6e8796;font-size:12px;letter-spacing:3px}
+.core{width:190px;height:190px;margin:34px auto 22px;position:relative;border-radius:50%;display:grid;place-items:center}
+.core:before,.core:after{content:"";position:absolute;border-radius:50%;inset:12px;border:1px solid #315363;box-shadow:0 0 30px #214454}
+.core:after{inset:28px;border-style:dashed;animation:spin 14s linear infinite}
+.eye{width:48px;height:48px;border-radius:50%;background:#14384b;box-shadow:0 0 12px #8eeeff,0 0 45px #3f9fc0;animation:pulse 2s ease-in-out infinite}
+.status{text-align:center;color:#83a8b8;font-size:14px;margin-bottom:14px}
+.status b{color:#bdeeff}
+.log{background:#0a0f16;border:1px solid #162b36;border-radius:16px;padding:10px;min-height:130px;max-height:45vh;overflow:auto}
+.msg{margin:9px 0;font-size:14px;line-height:1.5;white-space:pre-wrap}
+.you{color:#9bdcff}.jarvis{color:#dfeaf0}
+.controls{display:flex;gap:8px;margin-top:10px}
+input{min-width:0;flex:1;background:#0a0f16;color:#e8f6ff;border:1px solid #1b3643;border-radius:14px;padding:14px;font-size:15px;outline:none}
+button{border:0;border-radius:14px;background:#143548;color:#e8f6ff;padding:0 18px;font-weight:700;font-size:15px}
+button:active{transform:scale(.98)}
+.mic{margin-top:10px;width:100%;height:54px;border:1px solid #244a5d;background:#0b1821}
+.switch{margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;color:#718997;font-size:13px}
+.switch input{width:20px;height:20px}
+footer{text-align:center;color:#506673;font-size:11px;margin-top:auto;padding-top:18px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{50%{transform:scale(.82);opacity:.7}}
-.status{text-align:center;color:#83a8b8;font-size:13px;margin-bottom:18px}
-.status b{color:#bdeeff}
-.log{background:#0a0f16;border:1px solid #162b36;border-radius:16px;padding:13px;min-height:125px;max-height:245px;overflow:auto}
-.msg{margin:9px 0;font-size:14px;line-height:1.45}
-.you{color:#9bdcff}.jarvis{color:#dfeaf0}
-.controls{display:flex;gap:8px;margin-top:12px}
-.input{min-width:0;flex:1;background:#0a0f16;color:white;border:1px solid #1c3542;border-radius:14px;padding:14px;outline:none;font-size:15px}
-.btn{border:0;border-radius:14px;background:#143b4b;color:white;padding:0 15px;font-size:15px}
-.mic{margin-top:11px;width:100%;height:54px;border-radius:15px;border:1px solid #1d6378;background:#0b2029;color:#bfefff;font-size:16px}
-.switch{margin-top:12px;display:flex;justify-content:space-between;align-items:center;background:#0a0f16;border:1px solid #162b36;border-radius:14px;padding:12px 14px;color:#90a9b5;font-size:12px}
-.switch input{width:20px;height:20px}
-.footer{text-align:center;color:#506673;font-size:11px;margin-top:auto;padding-top:20px}
 </style>
 </head>
 <body>
-<main class="app" id="app">
-<div class="header">J.A.R.V.I.S.</div>
-<div class="sub">PERSONAL AI ASSISTANT • V2</div>
+<div class="app">
+<header><h1>J.A.R.V.I.S.</h1><div class="sub">PERSONAL AI ASSISTANT</div></header>
 <div class="core"><div class="eye"></div></div>
 <div class="status" id="status">● <b>HAZIR</b></div>
-<div class="log" id="log"><div class="msg jarvis"><b>Jarvis:</b> Merhaba. Sesli komut için hazırım.</div></div>
-<div class="controls">
-<input class="input" id="input" placeholder="Jarvis'e bir şey söyle...">
-<button class="btn" onclick="send()">Gönder</button>
+<div class="log" id="log"><div class="msg jarvis"><b>JARVIS:</b> Merhaba. Ben hazırım. Bana bir şey sorabilirsin.</div></div>
+<div class="controls"><input id="input" autocomplete="off" placeholder="JARVIS'e bir şey sor..."><button id="send">Gönder</button></div>
+<button class="mic" id="mic">🎙️ Mikrofonu Başlat</button>
+<label class="switch"><input type="checkbox" id="speak" checked> Cevapları sesli oku</label>
+<footer>J.A.R.V.I.S. • Netlify + OpenAI</footer>
 </div>
-<button class="mic" onclick="listen()">🎙️ Konuş ve Dinle</button>
-<label class="switch"><span>🔊 Jarvis sesli cevap versin</span><input id="voice" type="checkbox" checked></label>
-<div class="footer">V2 • Ses tanıma + sesli cevap • Gerçek AI bağlantısı sonraki adım</div>
-</main>
 <script>
-const log=document.getElementById('log'),input=document.getElementById('input'),status=document.getElementById('status'),app=document.getElementById('app');
-function add(who,text,cls){
-  log.innerHTML+=`<div class="msg ${cls}"><b>${who}:</b> ${text}</div>`;
-  log.scrollTop=log.scrollHeight;
+const log=document.getElementById("log"),input=document.getElementById("input"),send=document.getElementById("send"),mic=document.getElementById("mic"),status=document.getElementById("status"),speak=document.getElementById("speak");
+let messages=[],recognition=null;
+
+function add(role,text){
+const div=document.createElement("div");
+div.className="msg "+(role==="user"?"you":"jarvis");
+div.innerHTML="<b>"+(role==="user"?"SEN":"JARVIS")+":</b> "+escapeHtml(text);
+log.appendChild(div);
+log.scrollTop=log.scrollHeight
 }
-function speak(text){
-  if(!document.getElementById('voice').checked || !('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  let u=new SpeechSynthesisUtterance(text);
-  u.lang='tr-TR'; u.rate=.95; u.pitch=.95;
-  speechSynthesis.speak(u);
+
+function escapeHtml(s){
+return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))
 }
-function brain(t){
-  let x=t.toLowerCase(),r='Bunu anladım. Gerçek yapay zekâ beynini bir sonraki adımda güvenli sunucuya bağlayacağız.';
-  if(x.includes('merhaba')||x.includes('selam')) r='Merhaba. Seni dinliyorum.';
-  else if(x.includes('nasılsın')) r='Gayet iyiyim. Sistemlerim hazır.';
-  else if(x.includes('kimsin')) r='Ben geliştirdiğimiz kişisel Jarvis asistanıyım.';
-  else if(x.includes('test')) r='Sesli yanıt sistemim çalışıyor.';
-  add('Jarvis',r,'jarvis'); speak(r);
+
+function setStatus(t){
+status.innerHTML="● <b>"+escapeHtml(t)+"</b>"
 }
-function send(){
-  let t=input.value.trim();
-  if(!t)return;
-  add('Sen',t,'you');
-  input.value='';
-  brain(t);
+
+async function ask(text){
+text=text.trim();
+if(!text)return;
+
+add("user",text);
+messages.push({role:"user",content:text});
+input.value="";
+send.disabled=true;
+setStatus("DÜŞÜNÜYOR...");
+
+try{
+const r=await fetch("/.netlify/functions/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({messages:messages.slice(-20)})
+});
+
+const data=await r.json();
+
+if(!r.ok)throw new Error(data.error||"Sunucu hatası");
+
+const answer=data.answer||"Cevap alınamadı.";
+
+messages.push({role:"assistant",content:answer});
+add("assistant",answer);
+
+if(speak.checked&&"speechSynthesis"in window){
+speechSynthesis.cancel();
+const u=new SpeechSynthesisUtterance(answer);
+u.lang="tr-TR";
+u.rate=.98;
+speechSynthesis.speak(u)
 }
-function listen(){
-  const R=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!R){alert('Bu tarayıcı ses tanımayı desteklemiyor.');return}
-  const rec=new R();
-  rec.lang='tr-TR'; rec.interimResults=false; rec.maxAlternatives=1;
-  status.innerHTML='● <b>DİNLİYORUM...</b>';
-  app.classList.add('listening');
-  rec.start();
-  rec.onresult=e=>{input.value=e.results[0][0].transcript;send()};
-  rec.onerror=()=>{
-    add('Jarvis','Sesini anlayamadım. Tekrar deneyebiliriz.','jarvis');
-    status.innerHTML='● <b>HAZIR</b>';
-  };
-  rec.onend=()=>{
-    status.innerHTML='● <b>HAZIR</b>';
-    app.classList.remove('listening');
-  };
+
+setStatus("HAZIR")
+}catch(e){
+add("assistant","Bağlantı hatası: "+e.message);
+setStatus("HATA")
+}finally{
+send.disabled=false;
+input.focus()
 }
-input.addEventListener('keydown',e=>{if(e.key==='Enter')send()});
+}
+
+send.onclick=()=>ask(input.value);
+
+input.addEventListener("keydown",e=>{
+if(e.key==="Enter")ask(input.value)
+});
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+
+if(SR){
+recognition=new SR();
+recognition.lang="tr-TR";
+recognition.interimResults=false;
+recognition.continuous=false;
+
+recognition.onstart=()=>{
+mic.textContent="🔴 Dinliyorum...";
+setStatus("DİNLİYOR...")
+};
+
+recognition.onresult=e=>{
+input.value=e.results[0][0].transcript;
+ask(input.value)
+};
+
+recognition.onerror=()=>{
+mic.textContent="🎙️ Mikrofonu Başlat";
+setStatus("MİKROFON HATASI")
+};
+
+recognition.onend=()=>{
+mic.textContent="🎙️ Mikrofonu Başlat";
+if(status.textContent.includes("DİNLİYOR"))setStatus("HAZIR")
+};
+
+mic.onclick=()=>{
+try{recognition.start()}catch(e){}
+}
+}else{
+mic.disabled=true;
+mic.textContent="🎙️ Bu tarayıcı sesli girişi desteklemiyor"
+}
 </script>
 </body>
 </html>
